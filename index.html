@@ -946,12 +946,50 @@ body::before{
 <section class="contact" id="contacto">
   <h2 class="lead">Cuéntanos<br/>tu <em>idea</em><br/><span class="strk">y la cocinamos</span><br/>juntos.</h2>
   <div class="contact-grid">
-    <form class="contact-form" onsubmit="event.preventDefault();this.querySelector('.send-btn span:first-child').textContent='Enviado ✦';">
-      <div class="field"><label>01 / cómo te llamas</label><input type="text" placeholder="Tu nombre" required /></div>
-      <div class="field"><label>02 / dónde te escribimos</label><input type="email" placeholder="tu@email.com" required /></div>
-      <div class="field"><label>03 / cuéntanos la idea</label><textarea placeholder="Una marca, un evento, una formación, un local…" required></textarea></div>
-      <button class="send-btn" type="submit"><span>Enviar mensaje</span><span class="arr">→</span></button>
-    </form>
+<form class="contact-form" id="contactForm">
+  <div class="field"><label>01 / cómo te llamas</label><input type="text" name="name" placeholder="Tu nombre" required /></div>
+  <div class="field"><label>02 / dónde te escribimos</label><input type="email" name="email" placeholder="tu@email.com" required /></div>
+  <div class="field"><label>03 / cuéntanos la idea</label><textarea name="message" placeholder="Una marca, un evento, una formación, un local…" required></textarea></div>
+  <button class="send-btn" type="submit" id="sendBtn">
+    <span id="sendLabel">Enviar mensaje</span><span class="arr">→</span>
+  </button>
+</form>
+
+<script>
+document.getElementById('contactForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn   = document.getElementById('sendBtn');
+  const label = document.getElementById('sendLabel');
+  const fd    = new FormData(this);
+
+  btn.disabled = true;
+  label.textContent = 'Enviando…';
+
+  try {
+    const res = await fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name:    fd.get('name'),
+        email:   fd.get('email'),
+        message: fd.get('message'),
+      }),
+    });
+
+    if (res.ok) {
+      label.textContent = 'Enviado ✦';
+      this.reset();
+    } else {
+      const { error } = await res.json();
+      label.textContent = error || 'Error al enviar';
+      btn.disabled = false;
+    }
+  } catch {
+    label.textContent = 'Error de conexión';
+    btn.disabled = false;
+  }
+});
+</script>
     <div class="contact-info">
       <div class="group"><div class="lbl">Email</div><div class="val">carolina@<br/>tatindemanzana.com</div></div>
       <div class="group"><div class="lbl">Teléfono</div><div class="val">+34 637 37 47 78</div></div>
